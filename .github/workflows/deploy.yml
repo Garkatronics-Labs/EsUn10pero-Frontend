@@ -34,9 +34,7 @@ jobs:
         run: corepack prepare pnpm@latest --activate
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        env:
-          PNPM_IGNORE_SCRIPTS: false
+        run: pnpm install --frozen-lockfile --unsafe-perm
 
       - name: Build project
         run: pnpm build
