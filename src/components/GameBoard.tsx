@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Room, ClientMessage } from "../types/game";
+import { useEffect } from "react";
 
 interface Props {
   room: Room;
@@ -10,7 +11,9 @@ interface Props {
 export function GameBoard({ room, playerId, sendMessage }: Props) {
   const [hintInput, setHintInput] = useState("");
   const [guessInput, setGuessInput] = useState<number>(5);
-
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(
+    null,
+  );
   const totalPlayers = room.players.length;
   const selectorPlayer = room.players[room.currentTurn];
   const guesserPlayer = room.players[(room.currentTurn + 1) % totalPlayers];
@@ -20,6 +23,30 @@ export function GameBoard({ room, playerId, sendMessage }: Props) {
 
   const isSelector = selectorPlayer.id === playerId;
   const isGuesser = guesserPlayer.id === playerId;
+
+  useEffect(() => {
+    if (room.state !== "hinting") return;
+
+    const loadImage = async () => {
+      try {
+        const res = await fetch(`/rooms/${room.id}/image`);
+        if (!res.ok) return;
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+
+        setGeneratedImageUrl(url);
+      } catch (e) {
+        console.error("Error loading room image", e);
+      }
+    };
+
+    loadImage();
+
+    return () => {
+      if (generatedImageUrl) URL.revokeObjectURL(generatedImageUrl);
+    };
+  }, [room.state, room.id]);
 
   const handleCardSelection = (num: number) => {
     sendMessage({
@@ -91,13 +118,13 @@ export function GameBoard({ room, playerId, sendMessage }: Props) {
               </h3>
               <div className="grid grid-cols-5 gap-2 max-w-lg mx-auto">
                 {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
-                  <button
+                  <img
                     key={num}
+                    src={`/EsUn10pero-Frontend/assets/${num}.png`}
+                    alt={`Card ${num}`}
                     onClick={() => handleCardSelection(num)}
-                    className="aspect-square bg-slate-900 border-2 border-indigo-500 hover:bg-indigo-600 font-bold text-xl rounded-xl transition flex items-center justify-center text-white"
-                  >
-                    {num}
-                  </button>
+                    className="aspect-square bg-slate-900 border-2 border-indigo-500 hover:bg-indigo-600 rounded-xl transition cursor-pointer object-cover"
+                  />
                 ))}
               </div>
             </div>
@@ -169,6 +196,15 @@ export function GameBoard({ room, playerId, sendMessage }: Props) {
       {room.state === "guessing" && (
         <div className="text-center py-6">
           <div className="bg-slate-900 p-4 rounded-xl border border-slate-700 mb-6 max-w-xl mx-auto">
+            {generatedImageUrl && (
+              <div className="mb-4">
+                <img
+                  src={generatedImageUrl}
+                  alt="Generated"
+                  className="mx-auto rounded-xl border border-slate-700 max-h-64"
+                />
+              </div>
+            )}
             <span className="text-xs uppercase tracking-wider font-mono text-slate-400 block mb-1">
               Premisa de la Ronda
             </span>
