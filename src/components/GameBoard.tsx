@@ -100,7 +100,7 @@ export function GameBoard({ room, playerId, sendMessage }: Props) {
                     src={`/EsUn10pero-Frontend/assets/${num}.png`}
                     alt={`Card ${num}`}
                     onClick={() => handleCardSelection(num)}
-                    className="aspect-square bg-slate-900 border-2 border-indigo-500 hover:bg-indigo-600 rounded-xl transition cursor-pointer object-cover"
+                    className="aspect-[3/4] object-cover w-full rounded-xl cursor-pointer transition"
                   />
                 ))}
               </div>
