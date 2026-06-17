@@ -6,7 +6,7 @@ import { GameBoard } from "./components/GameBoard";
 import { ChatBox } from "./components/ChatBox";
 import { Scoreboard } from "./components/Scoreboard";
 
-const WS_URL = "ws://localhost:5000/ws";
+const WS_URL = "wss://esun10pero-backend.onrender.com/ws";
 
 export default function App() {
   const { room, playerId, playerName, setPlayerName, sendMessage } =
