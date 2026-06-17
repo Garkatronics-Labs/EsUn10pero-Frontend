@@ -34,7 +34,9 @@ jobs:
         run: corepack prepare pnpm@latest --activate
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --allow-build=esbuild
+        run: pnpm install --frozen-lockfile
+        env:
+          PNPM_IGNORE_SCRIPTS: false
 
       - name: Build project
         run: pnpm build
