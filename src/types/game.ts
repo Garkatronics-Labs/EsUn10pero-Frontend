@@ -25,6 +25,7 @@ export interface Room {
   timer: number;
   maxTime: number;
   chat: ChatMessage[];
+  imageUrl?: string;
 }
 
 // Mensajes enviados DESDE el cliente HACIA el servidor

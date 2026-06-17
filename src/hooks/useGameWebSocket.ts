@@ -42,6 +42,11 @@ export function useGameWebSocket(url: string) {
         const { type, payload } = data;
 
         switch (type) {
+          case "imageGenerated":
+            setRoom((prev) =>
+              prev ? { ...prev, imageUrl: payload.url } : null,
+            );
+            break;
           case "roomCreated":
           case "roomJoined":
             setRoom(payload.room);
