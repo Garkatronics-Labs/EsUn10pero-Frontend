@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Room, ClientMessage } from "../types/game";
+import { GameEvent } from "../types";
+import { Room } from "../types/game";
 import { v4 as uuidv4 } from "uuid";
 
 export function useGameWebSocket(url: string) {
@@ -47,35 +48,82 @@ export function useGameWebSocket(url: string) {
               prev ? { ...prev, imageUrl: payload.url } : null,
             );
             break;
-          case "roomCreated":
-          case "roomJoined":
+          case GameEvent.RoomCreated:
+          case GameEvent.RoomJoined:
             setRoom(payload.room);
             break;
-          case "playerJoined":
-          case "playerLeft":
-          case "gameStateUpdated":
+          case GameEvent.PlayerJoined:
+          case GameEvent.PlayerLeft:
+          case GameEvent.GameStateUpdated:
             setRoom(payload.room);
             break;
-          case "hintSubmitted":
-            if (room)
-              setRoom({ ...room, hint: payload.hint, state: "guessing" });
+          case GameEvent.GuesserSelected:
+            setRoom((prev) =>
+              prev
+                ? { ...prev, guesserId: payload.guesserId, state: "premise" }
+                : null,
+            );
             break;
-          case "timerSync":
+          case GameEvent.PremisePlayerSelected:
+            setRoom((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    currentPremisePlayerId: payload.playerId,
+                    state: "premise",
+                  }
+                : null,
+            );
+            break;
+          case GameEvent.PremiseSubmitted:
+            setRoom((prev) =>
+              prev ? { ...prev, premises: payload.premises } : null,
+            );
+            break;
+          case GameEvent.GuessSubmitted:
+            setRoom((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    guessAttempts: payload.guessAttempts,
+                    state: payload.isCorrect ? "round_end" : "premise",
+                    roundResult: payload.isCorrect
+                      ? { success: true, number: payload.guessAttempts }
+                      : undefined,
+                  }
+                : null,
+            );
+            break;
+          case GameEvent.RoundEnded:
+            setRoom((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    state: "round_end",
+                    roundResult: {
+                      success: payload.success,
+                      number: payload.number,
+                    },
+                  }
+                : null,
+            );
+            break;
+          case GameEvent.TimerSync:
             setRoom((prev) =>
               prev ? { ...prev, timer: payload.timer } : null,
             );
             break;
-          case "maxTimeUpdated":
+          case GameEvent.MaxTimeUpdated:
             setRoom((prev) =>
               prev ? { ...prev, maxTime: payload.maxTime } : null,
             );
             break;
-          case "adminChanged":
+          case GameEvent.AdminChanged:
             setRoom((prev) =>
               prev ? { ...prev, adminId: payload.newAdminId } : null,
             );
             break;
-          case "messageReceived":
+          case GameEvent.MessageReceived:
             setRoom((prev) => {
               if (!prev) return null;
               return {
@@ -84,10 +132,23 @@ export function useGameWebSocket(url: string) {
               };
             });
             break;
-          case "gameEnded":
-          case "roomLeft":
-          case "roomNotFound":
-          case "roomFull":
+          case GameEvent.StatsUpdated:
+            setRoom((prev) => {
+              if (!prev) return null;
+              return {
+                ...prev,
+                players: prev.players.map((p) =>
+                  p.id === payload.playerId
+                    ? { ...p, stats: payload.stats }
+                    : p,
+                ),
+              };
+            });
+            break;
+          case GameEvent.GameEnded:
+          case GameEvent.RoomLeft:
+          case GameEvent.RoomNotFound:
+          case GameEvent.RoomFull:
             alert(`Evento del servidor: ${type}`);
             setRoom(null);
             break;
@@ -102,7 +163,7 @@ export function useGameWebSocket(url: string) {
     };
   }, [url]);
 
-  const sendMessage = useCallback((msg: ClientMessage) => {
+  const sendMessage = useCallback((msg: any) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(msg));
     }

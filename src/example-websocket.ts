@@ -12,12 +12,12 @@ class GameClient {
       this.ws = new WebSocket(this.url);
 
       this.ws.onopen = () => {
-        console.log('Conexión WebSocket establecida');
+        console.log("Conexión WebSocket establecida");
         resolve();
       };
 
       this.ws.onerror = (error) => {
-        console.error('Error en WebSocket:', error);
+        console.error("Error en WebSocket:", error);
         reject(error);
       };
 
@@ -26,41 +26,50 @@ class GameClient {
           const { type, payload } = JSON.parse(event.data);
           this.handleMessage(type, payload);
         } catch (error) {
-          console.error('Error al parsear mensaje:', error);
+          console.error("Error al parsear mensaje:", error);
         }
       };
 
       this.ws.onclose = () => {
-        console.log('Conexión WebSocket cerrada');
+        console.log("Conexión WebSocket cerrada");
       };
     });
   }
 
   private handleMessage(type: string, payload: any): void {
     switch (type) {
-      case 'roomCreated':
-        console.log('Sala creada:', payload);
+      case "roomCreated":
+        console.log("Sala creada:", payload);
         break;
-      case 'roomJoined':
-        console.log('Te uniste a la sala:', payload);
+      case "roomJoined":
+        console.log("Te uniste a la sala:", payload);
         break;
-      case 'playerJoined':
-        console.log('Jugador se unió:', payload);
+      case "playerJoined":
+        console.log("Jugador se unió:", payload);
         break;
-      case 'gameStarted':
-        console.log('Juego iniciado:', payload);
+      case "gameStarted":
+        console.log("Juego iniciado:", payload);
         break;
-      case 'turnAssigned':
-        console.log('Turno asignado:', payload);
+      case "guesserSelected":
+        console.log("Adivinador seleccionado:", payload);
         break;
-      case 'cardSelected':
-        console.log('Carta seleccionada:', payload);
+      case "premisePlayerSelected":
+        console.log("Autor de premisa seleccionado:", payload);
         break;
-      case 'guessResult':
-        console.log('Resultado de adivinanza:', payload);
+      case "premiseSubmitted":
+        console.log("Premisa guardada:", payload);
         break;
-      case 'messageReceived':
-        console.log('Mensaje recibido:', payload);
+      case "guessSubmitted":
+        console.log("Resultado del intento:", payload);
+        break;
+      case "roundEnded":
+        console.log("Ronda terminada:", payload);
+        break;
+      case "statsUpdated":
+        console.log("Estadísticas actualizadas:", payload);
+        break;
+      case "messageReceived":
+        console.log("Mensaje recibido:", payload);
         break;
       default:
         console.log(`Mensaje desconocido: ${type}`, payload);
@@ -71,36 +80,41 @@ class GameClient {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify({ type, payload }));
     } else {
-      console.error('WebSocket no está abierto');
+      console.error("WebSocket no está abierto");
     }
   }
 
   createRoom(name: string, playerId: string, playerName: string): void {
-    this.send('createRoom', { name, playerId, playerName });
+    this.send("createRoom", { name, playerId, playerName });
   }
 
   joinRoom(roomId: string, playerId: string, playerName: string): void {
-    this.send('joinRoom', { roomId, playerId, playerName });
+    this.send("joinRoom", { roomId, playerId, playerName });
   }
 
   startGame(roomId: string, adminId: string): void {
-    this.send('startGame', { roomId, adminId });
+    this.send("startGame", { roomId, adminId });
   }
 
-  selectCard(roomId: string, playerId: string, cardNumber: number): void {
-    this.send('selectCard', { roomId, playerId, cardNumber });
-  }
-
-  submitHint(roomId: string, playerId: string, hint: string): void {
-    this.send('submitHint', { roomId, playerId, hint });
+  submitPremise(roomId: string, playerId: string, text: string): void {
+    this.send("submitPremise", { roomId, playerId, text });
   }
 
   submitGuess(roomId: string, playerId: string, guess: number): void {
-    this.send('submitGuess', { roomId, playerId, guess });
+    this.send("submitGuess", { roomId, playerId, guess });
   }
 
-  sendMessage(roomId: string, playerId: string, playerName: string, message: string): void {
-    this.send('sendMessage', { roomId, playerId, playerName, message });
+  voteToSkip(roomId: string, voterId: string): void {
+    this.send("voteToSkip", { roomId, voterId });
+  }
+
+  sendMessage(
+    roomId: string,
+    playerId: string,
+    playerName: string,
+    message: string,
+  ): void {
+    this.send("sendMessage", { roomId, playerId, playerName, message });
   }
 
   disconnect(): void {

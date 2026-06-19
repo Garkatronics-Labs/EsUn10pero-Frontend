@@ -1,4 +1,3 @@
-import React from "react";
 import { useGameWebSocket } from "./hooks/useGameWebSocket";
 import { CreateOrJoin } from "./components/CreateOrJoin";
 import { WaitingRoom } from "./components/WaitingRoom";
@@ -60,7 +59,7 @@ export default function App() {
             )}
           </div>
 
-          {/* Grid de Contenido Principal (Layout fluido tipo Tabla) */}
+          {/* Grid de Contenido Principal */}
           <div className="block lg:table lg:w-full lg:table-fixed lg:border-separate lg:border-spacing-x-4 space-y-4 lg:space-y-0">
             <div className="block lg:table-cell lg:w-2/3 lg:vertical-align-top">
               <GameBoard
@@ -70,7 +69,7 @@ export default function App() {
               />
             </div>
             <div className="block lg:table-cell lg:w-1/3 lg:vertical-align-top space-y-4">
-              <Scoreboard room={room} />
+              <Scoreboard room={room} playerId={playerId} />
               <ChatBox
                 room={room}
                 playerId={playerId}
